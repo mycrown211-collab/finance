@@ -1,52 +1,197 @@
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import "@/App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
 import axios from "axios";
+import { Copy, RefreshCw, CheckCircle2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
+import { Toaster } from "@/components/ui/sonner";
+import { toast } from "sonner";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-const Home = () => {
-  const helloWorldApi = async () => {
+function App() {
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState("");
+  const [copiedIndex, setCopiedIndex] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchSheetData = async (isManualRefresh = false) => {
     try {
-      const response = await axios.get(`${API}/`);
-      console.log(response.data.message);
-    } catch (e) {
-      console.error(e, `errored out requesting / api`);
+      if (isManualRefresh) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
+      
+      const response = await axios.get(`${API}/sheets/data`);
+      setData(response.data.data);
+      setLastUpdated(new Date(response.data.last_updated).toLocaleString('id-ID'));
+      
+      if (isManualRefresh) {
+        toast.success("Data berhasil diperbarui!");
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      toast.error("Gagal memuat data dari spreadsheet");
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  const copyToClipboard = async (value, index) => {
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopiedIndex(index);
+      toast.success("Berhasil disalin!", {
+        description: `Data "${value}" telah disalin ke clipboard`
+      });
+      
+      setTimeout(() => {
+        setCopiedIndex(null);
+      }, 2000);
+    } catch (error) {
+      console.error("Failed to copy:", error);
+      toast.error("Gagal menyalin data");
     }
   };
 
   useEffect(() => {
-    helloWorldApi();
+    fetchSheetData();
+    
+    // Auto-refresh every 15 seconds
+    const interval = setInterval(() => {
+      fetchSheetData();
+    }, 15000);
+    
+    return () => clearInterval(interval);
   }, []);
 
-  return (
-    <div>
-      <header className="App-header">
-        <a
-          className="App-link"
-          href="https://emergent.sh"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4" />
-        </a>
-        <p className="mt-5">Building something incredible ~!</p>
-      </header>
-    </div>
-  );
-};
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-emerald-600 mx-auto mb-4"></div>
+          <p className="text-slate-600 text-lg font-medium">Memuat data dari spreadsheet...</p>
+        </div>
+      </div>
+    );
+  }
 
-function App() {
   return (
-    <div className="App">
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />}>
-            <Route index element={<Home />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-slate-50">
+      <Toaster position="top-right" richColors />
+      
+      {/* Header */}
+      <header className="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-slate-900" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                Google Sheets Sync
+              </h1>
+              <p className="text-slate-500 mt-1">Data realtime dari spreadsheet Anda</p>
+            </div>
+            
+            <Button
+              onClick={() => fetchSheetData(true)}
+              disabled={refreshing}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2"
+              data-testid="refresh-button"
+            >
+              <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+              {refreshing ? 'Memperbarui...' : 'Perbarui Data'}
+            </Button>
+          </div>
+          
+          {lastUpdated && (
+            <div className="mt-4 text-sm text-slate-500">
+              Terakhir diperbarui: <span className="font-medium text-slate-700">{lastUpdated}</span>
+            </div>
+          )}
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {data.length === 0 ? (
+          <Card className="p-12 text-center bg-white/60 backdrop-blur-sm border-slate-200">
+            <div className="text-slate-400 mb-4">
+              <svg className="mx-auto h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-semibold text-slate-700 mb-2">Tidak ada data</h3>
+            <p className="text-slate-500">Belum ada data di kolom A spreadsheet Anda</p>
+          </Card>
+        ) : (
+          <>
+            <div className="mb-6 flex items-center justify-between">
+              <h2 className="text-xl font-semibold text-slate-700">
+                Data Kolom A <span className="text-emerald-600">({data.length} item)</span>
+              </h2>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {data.map((item, index) => (
+                <Card
+                  key={item.index}
+                  className="group relative overflow-hidden bg-white hover:shadow-xl transition-all duration-300 border-slate-200 hover:border-emerald-300"
+                  data-testid={`data-card-${index}`}
+                >
+                  {/* Cell ID Badge */}
+                  <div className="absolute top-3 left-3 bg-emerald-100 text-emerald-700 text-xs font-bold px-2.5 py-1 rounded-full">
+                    {item.cell_id}
+                  </div>
+                  
+                  {/* Content */}
+                  <div className="p-6 pt-12">
+                    <div className="mb-4">
+                      <div className="text-2xl font-bold text-slate-800 break-words" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                        {item.value}
+                      </div>
+                    </div>
+                    
+                    {/* Copy Button */}
+                    <Button
+                      onClick={() => copyToClipboard(item.value, item.index)}
+                      className={`w-full transition-all duration-300 ${
+                        copiedIndex === item.index
+                          ? 'bg-green-600 hover:bg-green-700'
+                          : 'bg-emerald-600 hover:bg-emerald-700'
+                      } text-white gap-2`}
+                      data-testid={`copy-button-${index}`}
+                    >
+                      {copiedIndex === item.index ? (
+                        <>
+                          <CheckCircle2 className="h-4 w-4" />
+                          Tersalin!
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="h-4 w-4" />
+                          Salin Data
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                  
+                  {/* Hover Effect */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/0 to-teal-500/0 group-hover:from-emerald-500/5 group-hover:to-teal-500/5 transition-all duration-300 pointer-events-none"></div>
+                </Card>
+              ))}
+            </div>
+          </>
+        )}
+      </main>
+
+      {/* Footer */}
+      <footer className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-center text-slate-500 text-sm">
+        <p>Data disinkronkan otomatis setiap 15 detik</p>
+      </footer>
     </div>
   );
 }

@@ -113,29 +113,30 @@ function App() {
       
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-slate-900" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900 truncate" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
                 Google Sheets Sync
               </h1>
-              <p className="text-slate-500 mt-1">Data realtime dari spreadsheet Anda</p>
+              <p className="text-xs sm:text-sm text-slate-500 mt-1">Data realtime dari spreadsheet</p>
             </div>
             
             <Button
               onClick={() => fetchSheetData(true)}
               disabled={refreshing}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2 shrink-0 text-sm sm:text-base h-9 sm:h-10 px-3 sm:px-4"
               data-testid="refresh-button"
             >
-              <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
-              {refreshing ? 'Memperbarui...' : 'Perbarui Data'}
+              <RefreshCw className={`h-3 w-3 sm:h-4 sm:w-4 ${refreshing ? 'animate-spin' : ''}`} />
+              <span className="hidden xs:inline">{refreshing ? 'Memperbarui...' : 'Perbarui'}</span>
+              <span className="xs:hidden">⟳</span>
             </Button>
           </div>
           
           {lastUpdated && (
-            <div className="mt-4 text-sm text-slate-500">
-              Terakhir diperbarui: <span className="font-medium text-slate-700">{lastUpdated}</span>
+            <div className="mt-3 text-xs sm:text-sm text-slate-500">
+              Update: <span className="font-medium text-slate-700">{lastUpdated}</span>
             </div>
           )}
         </div>

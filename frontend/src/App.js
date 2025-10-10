@@ -235,12 +235,16 @@ function App() {
                   {/* Content */}
                   <div className="p-4 sm:p-6 pt-10 sm:pt-12">
                     {/* Data value - selectable for manual copy */}
-                    <div className="mb-3 sm:mb-4">
+                    <div className="mb-3 sm:mb-4 relative group/text">
                       <div 
-                        className="text-base sm:text-lg font-bold text-slate-800 break-words whitespace-pre-line leading-relaxed select-all cursor-text"
+                        className="text-base sm:text-lg font-bold text-slate-800 break-words whitespace-pre-line leading-relaxed select-all cursor-text bg-slate-50 p-3 rounded-lg border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50/30 transition-all"
                         style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+                        title="Tap dan tahan untuk copy manual"
                       >
                         {item.value}
+                      </div>
+                      <div className="absolute top-1 right-1 opacity-0 group-hover/text:opacity-100 transition-opacity pointer-events-none">
+                        <span className="text-[10px] text-slate-400 bg-white px-1.5 py-0.5 rounded">Tap & hold</span>
                       </div>
                     </div>
                     

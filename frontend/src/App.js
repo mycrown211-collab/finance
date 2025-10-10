@@ -220,8 +220,15 @@ function App() {
       </main>
 
       {/* Footer */}
-      <footer className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-center text-slate-500 text-sm">
-        <p>Data disinkronkan otomatis setiap 15 detik</p>
+      <footer className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 text-center text-slate-500 text-xs sm:text-sm">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+            <p>Auto-sync setiap 15 detik</p>
+          </div>
+          <span className="hidden sm:inline text-slate-300">•</span>
+          <p className="text-slate-400">Long press pada data untuk salin manual</p>
+        </div>
       </footer>
     </div>
   );

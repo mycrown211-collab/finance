@@ -56,8 +56,8 @@ function AppContent() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
           <div className="flex items-center justify-center">
             <div className="text-center">
-              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-                Google Sheets Sync
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                Luminis
               </h1>
               <p className="text-xs sm:text-sm text-slate-500 mt-1">Data realtime dari spreadsheet Anda</p>
             </div>

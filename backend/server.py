@@ -135,6 +135,61 @@ async def get_sheet_data():
         )
 
 
+@api_router.get("/sheets/template-chat", response_model=SheetDataResponse)
+async def get_template_chat_data():
+    """
+    Fetch data from Google Sheets and return column B data (Template Chat)
+    Only return rows where column B is filled
+    """
+    try:
+        # Construct the CSV export URL
+        csv_url = f"https://docs.google.com/spreadsheets/d/{SPREADSHEET_ID}/export?format=csv&gid=0"
+        
+        # Fetch the CSV data
+        response = requests.get(csv_url, timeout=10)
+        response.raise_for_status()
+        
+        # Parse CSV
+        csv_content = response.content.decode('utf-8')
+        csv_reader = csv.reader(io.StringIO(csv_content))
+        
+        # Extract column B data
+        result_data = []
+        row_index = 0
+        
+        for row in csv_reader:
+            row_index += 1
+            if row and len(row) > 1:  # Check if column B exists
+                column_b_value = row[1].strip()
+                
+                # Include if column B has any non-empty value
+                if column_b_value:
+                    result_data.append({
+                        "index": row_index,
+                        "cell_id": f"B{row_index}",
+                        "value": column_b_value
+                    })
+        
+        return SheetDataResponse(
+            data=result_data,
+            total=len(result_data),
+            last_updated=datetime.now(timezone.utc).isoformat()
+        )
+    
+    except requests.RequestException as e:
+        logger.error(f"Error fetching Google Sheets template chat data: {str(e)}")
+        raise HTTPException(
+            status_code=503,
+            detail=f"Failed to fetch data from Google Sheets: {str(e)}"
+        )
+    except Exception as e:
+        logger.error(f"Unexpected error: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal server error: {str(e)}"
+        )
+
+
 # Include the router in the main app
 app.include_router(api_router)
 

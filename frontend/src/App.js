@@ -150,7 +150,7 @@ function App() {
                   {/* Content */}
                   <div className="p-6 pt-12">
                     <div className="mb-4">
-                      <div className="text-2xl font-bold text-slate-800 break-words" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                      <div className="text-lg font-bold text-slate-800 break-words whitespace-pre-line leading-relaxed" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
                         {item.value}
                       </div>
                     </div>

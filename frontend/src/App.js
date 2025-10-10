@@ -1,17 +1,52 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import "@/App.css";
-import axios from "axios";
-import { Copy, RefreshCw, CheckCircle2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
+import { BrowserRouter, Routes, Route, Link, useLocation } from "react-router-dom";
+import { Database, MessageSquare } from "lucide-react";
 import { Toaster } from "@/components/ui/sonner";
-import { toast } from "sonner";
+import DataKolomA from "@/pages/DataKolomA";
+import TemplateChat from "@/pages/TemplateChat";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+function Navigation() {
+  const location = useLocation();
+  
+  const isActive = (path) => {
+    return location.pathname === path;
+  };
 
-function App() {
+  return (
+    <nav className="border-b border-slate-200 bg-white/50 backdrop-blur-sm">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex gap-2 sm:gap-4 overflow-x-auto no-scrollbar">
+          <Link
+            to="/"
+            className={`flex items-center gap-2 px-4 sm:px-6 py-3 sm:py-4 border-b-2 transition-all whitespace-nowrap touch-manipulation ${
+              isActive('/')
+                ? 'border-emerald-600 text-emerald-700 font-semibold'
+                : 'border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300'
+            }`}
+          >
+            <Database className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="text-sm sm:text-base">Data Kolom A</span>
+          </Link>
+          
+          <Link
+            to="/template-chat"
+            className={`flex items-center gap-2 px-4 sm:px-6 py-3 sm:py-4 border-b-2 transition-all whitespace-nowrap touch-manipulation ${
+              isActive('/template-chat')
+                ? 'border-blue-600 text-blue-700 font-semibold'
+                : 'border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300'
+            }`}
+          >
+            <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="text-sm sm:text-base">Template Chat</span>
+          </Link>
+        </div>
+      </div>
+    </nav>
+  );
+}
+
+function AppContent() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState("");

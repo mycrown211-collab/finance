@@ -43,44 +43,102 @@ function App() {
   };
 
   const copyToClipboard = async (value, index) => {
+    let copySuccess = false;
+    
+    // Method 1: Modern Clipboard API
     try {
-      // Try modern clipboard API first
-      if (navigator.clipboard && window.isSecureContext) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
         await navigator.clipboard.writeText(value);
-      } else {
-        // Fallback method for older browsers or non-secure contexts
+        copySuccess = true;
+      }
+    } catch (err) {
+      console.log("Clipboard API failed, trying fallback...", err);
+    }
+    
+    // Method 2: Fallback using textarea and execCommand
+    if (!copySuccess) {
+      try {
         const textArea = document.createElement("textarea");
         textArea.value = value;
-        textArea.style.position = "fixed";
-        textArea.style.left = "-999999px";
-        textArea.style.top = "-999999px";
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
         
+        // Make it invisible but accessible
+        textArea.style.position = "fixed";
+        textArea.style.top = "0";
+        textArea.style.left = "0";
+        textArea.style.width = "2em";
+        textArea.style.height = "2em";
+        textArea.style.padding = "0";
+        textArea.style.border = "none";
+        textArea.style.outline = "none";
+        textArea.style.boxShadow = "none";
+        textArea.style.background = "transparent";
+        textArea.setAttribute('readonly', '');
+        
+        document.body.appendChild(textArea);
+        
+        // Select the text
+        if (navigator.userAgent.match(/ipad|iphone/i)) {
+          // iOS specific
+          const range = document.createRange();
+          range.selectNodeContents(textArea);
+          const selection = window.getSelection();
+          selection.removeAllRanges();
+          selection.addRange(range);
+          textArea.setSelectionRange(0, 999999);
+        } else {
+          textArea.focus();
+          textArea.select();
+        }
+        
+        // Execute copy command
         const successful = document.execCommand('copy');
         document.body.removeChild(textArea);
         
-        if (!successful) {
-          throw new Error('Copy command failed');
+        if (successful) {
+          copySuccess = true;
         }
+      } catch (err) {
+        console.log("Fallback method failed", err);
       }
-      
+    }
+    
+    // Method 3: Create a temporary input element
+    if (!copySuccess) {
+      try {
+        const input = document.createElement("input");
+        input.value = value;
+        input.style.position = "fixed";
+        input.style.opacity = "0";
+        document.body.appendChild(input);
+        input.focus();
+        input.select();
+        
+        const successful = document.execCommand('copy');
+        document.body.removeChild(input);
+        
+        if (successful) {
+          copySuccess = true;
+        }
+      } catch (err) {
+        console.log("Input method failed", err);
+      }
+    }
+    
+    // Show result
+    if (copySuccess) {
       setCopiedIndex(index);
-      const shortValue = value.length > 50 ? value.substring(0, 50) + '...' : value;
-      toast.success("Berhasil disalin!", {
-        description: `Data berhasil disalin ke clipboard`
+      toast.success("✓ Berhasil disalin!", {
+        description: `Data sudah tersimpan di clipboard`,
+        duration: 2000
       });
       
       setTimeout(() => {
         setCopiedIndex(null);
       }, 2000);
-    } catch (error) {
-      console.error("Failed to copy:", error);
-      
-      // Last resort: show the data for manual copy
-      toast.error("Tidak dapat menyalin otomatis", {
-        description: "Silakan salin manual dengan long press pada data"
+    } else {
+      toast.error("Gagal menyalin otomatis", {
+        description: "Tap dan tahan pada teks untuk copy manual",
+        duration: 3000
       });
     }
   };
